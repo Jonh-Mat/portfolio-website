@@ -6,6 +6,8 @@ const BlogManagement = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const [stats, setStats] = useState({
     totalPosts: 0,
     publishedPosts: 0,
@@ -84,22 +86,29 @@ const BlogManagement = () => {
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "blog_unsigned");
+    if (!file) return;
+
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "blog_unsigned");
+
+    setUploadingImage(true);
 
     try {
       const res = await fetch(
         "https://api.cloudinary.com/v1_1/dpjqo69v4/image/upload",
         {
           method: "POST",
-          body: formData,
+          body: data,
         }
       );
-      const data = await res.json();
-      setFormData({ ...formData, image: data.secure_url });
+
+      const result = await res.json();
+      setFormData((prev) => ({ ...prev, image: result.secure_url }));
     } catch (err) {
       console.error("Image upload failed:", err);
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -566,13 +575,37 @@ const BlogManagement = () => {
                   <label className="block text-white-50 mb-2 font-medium">
                     Upload Image
                   </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="..."
-                    required
-                  />
+
+                  <div className="relative">
+                    <input
+                      id="fileUpload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="sr-only"
+                    />
+                    <label
+                      htmlFor="fileUpload"
+                      className="inline-block px-4 py-3 bg-blue-100 text-white rounded-md cursor-pointer hover:bg-blue-50 transition"
+                    >
+                      {formData.image ? "Change Image" : "Select Image"}
+                    </label>
+                    {uploadingImage && (
+                      <span className="ml-4 text-blue-400 text-sm">
+                        Uploading...
+                      </span>
+                    )}
+                  </div>
+
+                  {formData.image && !uploadingImage && (
+                    <div className="mt-4">
+                      <img
+                        src={formData.image}
+                        alt="Preview"
+                        className="w-full max-h-64 object-cover rounded-md border border-black-50"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>
