@@ -64,6 +64,7 @@ const BlogManagement = () => {
     try {
       const postData = {
         ...formData,
+        status: "published",
         tags: formData.tags
           .split(",")
           .map((tag) => tag.trim())
@@ -78,6 +79,27 @@ const BlogManagement = () => {
     } catch (err) {
       setError("Failed to create post");
       console.error(err);
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "blog_unsigned");
+
+    try {
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dpjqo69v4/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await res.json();
+      setFormData({ ...formData, image: data.secure_url });
+    } catch (err) {
+      console.error("Image upload failed:", err);
     }
   };
 
@@ -542,15 +564,13 @@ const BlogManagement = () => {
 
                 <div>
                   <label className="block text-white-50 mb-2 font-medium">
-                    Image URL
+                    Upload Image
                   </label>
                   <input
-                    type="url"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleChange}
-                    placeholder="https://example.com/image.jpg"
-                    className="w-full px-4 py-4 md:text-base text-sm placeholder:text-blue-50 bg-blue-100 rounded-md border border-black-50 focus:border-white-50 focus:outline-none transition-colors"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="..."
                     required
                   />
                 </div>
