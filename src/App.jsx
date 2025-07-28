@@ -11,12 +11,19 @@ import Contact from "./sections/Contact";
 import Footer from "./sections/Footer";
 import Blog from "./Pages/Blog";
 import BlogManagement from "./Pages/BlogManagement";
+import BlogPost from "./Pages/BlogPost";
+import { AuthProvider } from "./context/AuthContext";
 
+import Register from "./Pages/Register";
+import { PrivateRoute } from "./components/PrivateRoute";
+import Login from "./Pages/Login";
 const App = () => {
   return (
-    <>
+    <AuthProvider>
       <Navbar />
       <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route
           path="/"
           element={
@@ -33,10 +40,32 @@ const App = () => {
             </>
           }
         />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog-management" element={<BlogManagement />} />
+        <Route
+          path="/blog"
+          element={
+            <PrivateRoute>
+              <Blog />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/blog-management"
+          element={
+            <PrivateRoute adminOnly>
+              <BlogManagement />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/blog/:id"
+          element={
+            <PrivateRoute>
+              <BlogPost />
+            </PrivateRoute>
+          }
+        />
       </Routes>
-    </>
+    </AuthProvider>
   );
 };
 
